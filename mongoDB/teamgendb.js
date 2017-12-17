@@ -37,17 +37,17 @@ app.post('/contact',function(req,res,next)
 {
 var fp=req.body.path;
 var size=req.body.teamsize;
-var err1=new Error();
+var err=new Error();
 
 if(size==0)    //error is passed to middlewares//
     {
-    err1.status=600;
-    next(err1);
+    err.status=600;
+    next(err);
     }
 else
 {
-fs.readFile(fp, function (err, data) {
-        if(err)
+fs.readFile(fp, function (err1, data) {
+        if(err1)
         {
         console.log("Error");
         }
@@ -57,31 +57,32 @@ fs.readFile(fp, function (err, data) {
                }
        else
        {
-        MongoClient.connect(url, function(err, db)  //connecting to mongoDB//
+        MongoClient.connect(url, function(err2, db)  //connecting to mongoDB//
         {
-           var err1=new Error();
-           if(err)
+            var err=new Error();
+           if(err2)
            {
-              res.render("dberror");
+               err.status=500;
+               next(err);
            }
            else{
 
             var dbase = db.db("ganesh");
            var jar = JSON.parse(data);
-          dbase.collection("BerkAspirants").insertMany(jar, function(err, doc) {      // collection created//
-          if (err) throw err;
+          dbase.collection("BerkAspirants").insertMany(jar, function(err1, doc) {      // collection created//
+          if (err1) throw err;
         
                      else{
-                dbase.collection('BerkAspirants').find({}).toArray(function(err, result) {      //getting the collection items//
-                if (err) throw err;
+                dbase.collection('BerkAspirants').find({}).toArray(function(err1, result) {      //getting the collection items//
+                if (err1) throw err;
                var ao=result;
                let asl=ao.length;
                
                let stream = fs.createWriteStream('D:/berkteams.txt');       
                             if(size>asl)                        //error is passed to middlewares//
                                   {
-                                  err1.status=400;
-                                   next(err1);
+                                  err.status=400;
+                                   next(err);
                                          }
                                      else
                                      {
@@ -158,26 +159,26 @@ fs.readFile(fp, function (err, data) {
 
 
 // middlewares error handling//
- app.use(function(err1,req,res,next)
+ app.use(function(err,req,res,next)
 {
-       if(err1.status==400)
+       if(err.status==400)
         {
           res.render('error2')
              }
-next(err1);
+next(err);
 });             
 
-app.use(function(err1,req,res,next)
+app.use(function(err,req,res,next)
 {
-        if(err1.status==600)
+        if(err.status==600)
         {
     res.render('error1');
          }
-         next(err1);
+         next(err);
 });
-app.use(function(err1,req,res,next)
+app.use(function(err,req,res,next)
 {
-        if(err1.status==500)
+        if(err.status==500)
         {
     res.render('error3');
          }
